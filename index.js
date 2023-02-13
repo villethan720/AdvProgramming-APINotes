@@ -1,56 +1,74 @@
 const express = require('express');
+const { parse } = require('path/posix');
 const app = express();
 
-app.get('/',(req, res) => {
-    res.send('Hello API World');
+app.use(express.json());
+
+const teams = [{
+    id: 1,
+    team: 'Eagles'
+},
+{id: 2,
+team:'Steelers'
+},
+{
+    id:3,
+    team: 'Chargers'
+}];
+
+//get all teams
+app.get('/api/teams', (req, res) => {
+    res.send(teams);
 });
 
-/*
-app.get('/api/games', (req, res) => {
-    res.send(['MarioBros', 'Castlevania', 'Zelda', 'Call of Duty']);
-});
-*/
-
-/*app.get('/api/games/:id', (req, res) => {
-    res.send(req.params.id);
-});
-*/
-
-//app.get('/api/games/:title/:publisher/:year', (req, res) => {
-//    res.send(req.params);
-//});
-
-app.get('/api/games/:title/:publisher', (req, res) => {
-    res.send([req.params, req.query]);
+//get teams by id
+app.get('/api/teams/:id', (req, res) => {
+    const team = teams.find(t => t.id === parseInt(req.params.id))
+    if(!team) return res.status(404).send('The team given ID was not found')
+    res.send(teams);
 });
 
-const ppugames =
-[   {
-        id:1,
-        title:'MarioBros'
-    },
-    {   id:2,
-        title:'Fifa'
-    },
-    {   id:3,
-        title:'2K'
+//add a team
+app.post('/api/teams', (req, res) => {
+    const strteam = {
+        id: teams.length +1,
+        team: req.body.team
     }
-];
 
-app.get('/api/games', (req, res) => {
-    res.send(ppugames);
-});
-
-//query data
-app.get('/api/games/:id', (req, res) => {
-    const games = ppugames.find(g => g.id === parseInt(req.params.id));
-    if(!games) 
-        return res.status(404).send('The game with ID given was not found');
+    teams.push(strteam);
+    res.send(strteam)
     
-    res.send(games);
 });
 
+//update teams
+app.put('/api/teams/:id',(req, res) => {
+    const myteam = teams.find(t => t.id === parseInt(req.params.id));
+    if(!myteam) return res.status(404).send('the team with the given id was not found');
 
+    myteam.team = req.body.team;
+    res.send(myteam);
+});
 
-const port = process.env.PORT || 4003;
-app.listen(port, () => console.log(`Listening to port ${port}`));
+//delete team
+app.delete('/api/teams/:id',(req, res) => {
+    const myteam = teams.find(t => t.id === parseInt(req.params.id));
+    if(!myteam) return res.status(404).send('the team with the given id was not found');
+
+    const index = teams.indexOf(myteam);
+    teams.splice(index, 1);
+
+    res.send(myteam);
+});
+//click delete 
+
+//COnfiguration port
+const port = process.env.port || 4020;
+app.listen(port, () => console.log('Listening on port ${port}...'))
+
+//to add on a post
+//{
+    //"id":4,
+    //"team": 'Panthers'
+//}
+
+//then click set button to test
